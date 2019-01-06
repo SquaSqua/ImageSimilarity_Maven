@@ -7,10 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
-
 class ImageDrawer {
 
-    private BufferedImage joinBufferedImages(BufferedImage img1, BufferedImage img2) {
+    private static BufferedImage joinBufferedImages(BufferedImage img1, BufferedImage img2) {
 
         int wid = img1.getWidth() + img2.getWidth();
         int height = Math.max(img1.getHeight(),img2.getHeight());
@@ -29,7 +28,7 @@ class ImageDrawer {
         return newImage;
     }
 
-    private BufferedImage drawKeyPoints(BufferedImage img, ArrayList<KeyPoint> keyPoints) {
+    private static BufferedImage drawKeyPoints(BufferedImage img, ArrayList<KeyPoint> keyPoints) {
 
         BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = newImage.createGraphics();
@@ -43,7 +42,7 @@ class ImageDrawer {
         return newImage;
     }
 
-    void createMergedImageWithPoints(Image image1, Image image2) {
+    static void createMergedImageWithPoints(Image image1, Image image2) {
         try {
             BufferedImage img1 = ImageIO.read(new File(image1.getFilePath()));
             BufferedImage img2 = ImageIO.read(new File(image2.getFilePath()));
@@ -57,7 +56,7 @@ class ImageDrawer {
         }
     }
 
-    void createMergedImageWithLines(Image image1, Image image2, ArrayList<Pair> pairs, String fileName) {
+    static void createMergedImageWithLines(Image image1, Image image2, ArrayList<Pair> pairs, String fileName) {
         try {
             BufferedImage img1 = ImageIO.read(new File(image1.getFilePath()));
             BufferedImage img2 = ImageIO.read(new File(image2.getFilePath()));
@@ -70,7 +69,7 @@ class ImageDrawer {
     }
 
 
-    private BufferedImage drawPairsLines(BufferedImage mergedImage, Image leftImage, ArrayList<Pair> pairs) {
+    private static BufferedImage drawPairsLines(BufferedImage mergedImage, Image leftImage, ArrayList<Pair> pairs) {
         BufferedImage newImage = new BufferedImage(mergedImage.getWidth(), mergedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         try {
             BufferedImage leftImgBuffered = ImageIO.read(new File(leftImage.getFilePath()));
@@ -88,7 +87,7 @@ class ImageDrawer {
         return newImage;
     }
 
-    private Color randomColor()
+    private static Color randomColor()
     {
         Random random = new Random();
         int red = random.nextInt(256);

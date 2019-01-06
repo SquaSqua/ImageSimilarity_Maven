@@ -5,6 +5,7 @@ import java.util.ArrayList;
 class ImageSimilarity {
     private Image img1, img2;
     private ArrayList<Pair> pairs = new ArrayList<Pair>();
+    static double threshold;
 
     ImageSimilarity(Image img1, Image img2) {
         this.img1 = img1;
@@ -12,20 +13,35 @@ class ImageSimilarity {
     }
 
 
-    boolean checkSimilarity(int neighbourhoodSize, int acceptanceNumber) {
-        boolean isSimilar = false;
-        ImageDrawer drawer = new ImageDrawer();
-        drawer.createMergedImageWithPoints(img1, img2);
+    int countSimilarPoints(int neighbourhoodSize, double acceptancePercentage) {
+        return checkSimilarity(neighbourhoodSize, acceptancePercentage);
+    }
+
+    int countSimilarPoints(int neighbourhoodSize, int iterations, double threshold, String transformName) {
+        ImageSimilarity.threshold = threshold;
+        alwaysDo(neighbourhoodSize);
+        RANSAC ransac = new RANSAC();
+        ArrayList<Pair> chosenPairs = ransac.choosePairsWithRANSAC(iterations, pairs, transformName);
+        ImageDrawer.createMergedImageWithLines(img1, img2, chosenPairs, "RANSAC");
+        return chosenPairs.size();
+    }
+
+    private void alwaysDo(int neighbourhoodSize) {
+        ImageDrawer.createMergedImageWithPoints(img1, img2);
         findPairs();
-        drawer.createMergedImageWithLines(img1, img2, pairs, "AllPairsLines");
+        ImageDrawer.createMergedImageWithLines(img1, img2, pairs, "AllPairsLines");
         setNeighbourhood(img1, neighbourhoodSize);
         setNeighbourhood(img2, neighbourhoodSize);
         setPairsNeighbourhood();
-        pairs = chooseConsistentNeighbours(acceptanceNumber);
-        drawer.createMergedImageWithLines(img1, img2, pairs, "ConsistentPairsLines");
+    }
 
+    private int checkSimilarity(int neighbourhoodSize, double acceptancePercentage) {
+        alwaysDo(neighbourhoodSize);
+        int acceptanceNumber = (int)(neighbourhoodSize * acceptancePercentage);
+        ArrayList<Pair> chosenPairs = chooseConsistentNeighbours(acceptanceNumber);
+        ImageDrawer.createMergedImageWithLines(img1, img2, chosenPairs, "ConsistentPairsLines");
 
-        return isSimilar;
+        return pairs.size();
     }
 
     private void setNeighbourhood(Image img, int neighbourhoodSize) {
