@@ -1,11 +1,16 @@
 package com.ewask.image_similarity_maven;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 class ImageSimilarity {
     private Image img1, img2;
     private ArrayList<Pair> pairs = new ArrayList<Pair>();
     static double threshold;
+    static double slip;
 
     ImageSimilarity(Image img1, Image img2) {
         this.img1 = img1;
@@ -13,17 +18,27 @@ class ImageSimilarity {
     }
 
 
-    int countSimilarPoints(int neighbourhoodSize, double acceptancePercentage) {
-        return checkSimilarity(neighbourhoodSize, acceptancePercentage);
+    void countSimilarPoints(int neighbourhoodSize, double acceptancePercentage) {
+        pairs.clear();
+        checkSimilarity(neighbourhoodSize, acceptancePercentage);
     }
 
-    int countSimilarPoints(int neighbourhoodSize, int iterations, double threshold, String transformName) {
-        ImageSimilarity.threshold = threshold;
+    void countSimilarPoints(int neighbourhoodSize, int iterations, double threshold, String transformName) {
+        pairs.clear();
+        try {
+            BufferedImage image1 = ImageIO.read(new File(img1.getFilePath()));
+            ImageSimilarity.threshold = threshold * image1.getWidth();
+            slip = threshold;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         alwaysDo(neighbourhoodSize);
         RANSAC ransac = new RANSAC();
         ArrayList<Pair> chosenPairs = ransac.choosePairsWithRANSAC(iterations, pairs, transformName);
-        ImageDrawer.createMergedImageWithLines(img1, img2, chosenPairs, "RANSAC");
-        return chosenPairs.size();
+        ImageDrawer.createMergedImageWithLines(img1, img2, chosenPairs, "RANSAC" + transformName);
+        System.out.println("RANSAC " + transformName + "; Liczba wybranych par: " + chosenPairs.size());
+        System.out.println("Próg akceptowalnego błędu: " + ImageSimilarity.slip);
     }
 
     private void alwaysDo(int neighbourhoodSize) {
@@ -35,13 +50,11 @@ class ImageSimilarity {
         setPairsNeighbourhood();
     }
 
-    private int checkSimilarity(int neighbourhoodSize, double acceptancePercentage) {
+    private void checkSimilarity(int neighbourhoodSize, double acceptancePercentage) {
         alwaysDo(neighbourhoodSize);
         int acceptanceNumber = (int)(neighbourhoodSize * acceptancePercentage);
         ArrayList<Pair> chosenPairs = chooseConsistentNeighbours(acceptanceNumber);
         ImageDrawer.createMergedImageWithLines(img1, img2, chosenPairs, "ConsistentPairsLines");
-
-        return pairs.size();
     }
 
     private void setNeighbourhood(Image img, int neighbourhoodSize) {
@@ -64,6 +77,7 @@ class ImageSimilarity {
                 pairs.add(new Pair(matchForB, matchForA));
             }
         }
+        System.out.println("Liczba par: " + pairs.size());
     }
 
     private ArrayList<Pair> chooseConsistentNeighbours(int acceptanceNumber) {
@@ -73,6 +87,7 @@ class ImageSimilarity {
                 acceptedPairs.add(pair);
             }
         }
+        System.out.println("Liczba spójnych par: " + acceptedPairs.size());
         return acceptedPairs;
     }
 

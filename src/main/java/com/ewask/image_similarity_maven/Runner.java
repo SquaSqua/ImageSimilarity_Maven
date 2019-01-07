@@ -10,7 +10,8 @@ public class Runner {
         Image img1 = new Image(path, imgName1);
         Image img2 = new Image(path, imgName2);
         ImageSimilarity similarity = new ImageSimilarity(img1, img2);
-//        similarity.countSimilarPoints(7, 0.3);
-        similarity.countSimilarPoints(10, 1000, 80, "Perspective");
+//        similarity.countSimilarPoints(20, 0.1);
+        similarity.countSimilarPoints(10, 100, 0.05, "Perspective");
+        similarity.countSimilarPoints(10, 100, 0.05, "Affine");
     }
 }
